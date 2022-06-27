@@ -35,6 +35,7 @@
 #include <asm/irq.h>
 #include <asm/io.h>
 
+#include <linux/clk.h>
 #include "dm9000.h"
 
 /* Board/System/Debug information/definition ---------------- */
