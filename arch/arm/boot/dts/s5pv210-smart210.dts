@@ -17,6 +17,8 @@
 /dts-v1/;
 #include <dt-bindings/interrupt-controller/irq.h>
 #include <dt-bindings/input/input.h>
+#include <dt-bindings/pinctrl/samsung.h>
+
 #include "s5pv210.dtsi"
 
 / {
@@ -60,17 +62,18 @@
 		pinctrl-names = "default";
 		pinctrl-0 = <&pwm3_out>;
 	};
-
-	led {
+	
+	led: led {
 		#address-cells = <1>;
 		#size-cells = <1>;
-		compatible = "led";
+		compatible = "s5pv210,led";
+		//pinctrl-name = "default";
+		//pinctrl-0 = <&led_pinctrl>;
 		status = "okay";
-		reg = <
-			0xE0200280  0x4  		/* GPJ2CON */
-			0xE0200284  0x4			/* GPJ2DAT */
-		>;
+		led-pin = <&gpj2 0 1>, <&gpj2 1 1>, <&gpj2 2 1>, <&gpj2 3 1>;
 	};
+
+
 
 };
 
@@ -266,4 +269,14 @@
 
 &i2s0 {
 	status = "okay";
+};
+
+&pinctrl0 {
+	led_pinctrl: led_pinctrl {
+		samsung,pins = "gpj2-0", "gpj2-1", "gpj2-2", "gpj2-3";
+		samsung,pin-function = <EXYNOS_PIN_FUNC_OUTPUT>;
+		samsung,pin-val = <1>;
+		samsung,pin-pud = <S3C64XX_PIN_PULL_UP>;
+		samsung,pin-drv = <EXYNOS4_PIN_DRV_LV1>;
+	};
 };
