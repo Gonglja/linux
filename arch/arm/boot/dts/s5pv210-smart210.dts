@@ -61,6 +61,17 @@
 		pinctrl-0 = <&pwm3_out>;
 	};
 
+	led {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		compatible = "led";
+		status = "okay";
+		reg = <
+			0xE0200280  0x4  		/* GPJ2CON */
+			0xE0200284  0x4			/* GPJ2DAT */
+		>;
+	};
+
 };
 
 //必须重新设置xxti的时钟频率，不然会导致计时器卡死无法启动系统！！！

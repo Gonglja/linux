@@ -16,14 +16,14 @@
 
 # 0.4 配置编译链环境
 export ARCH=arm
-export CROSS_COMPILE=arm-none-eabi-
+export CROSS_COMPILE=/opt/s5pv210/arm-buildroot-linux-gnueabi_sdk-buildroot/bin/arm-buildroot-linux-gnueabi-
 
 OUT_DIR=/home/u/workspace/os/output
 
 # 0.5  清除以前编译
-make clean 
-make distclean
-make mrproper
+make  O=$OUT_DIR clean 
+make  O=$OUT_DIR distclean
+make  O=$OUT_DIR mrproper
 mkdir -p $OUT_DIR
 
 
