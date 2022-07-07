@@ -75,7 +75,13 @@
 		led-pin = <&gpj2 0 1>, <&gpj2 1 1>, <&gpj2 2 1>, <&gpj2 3 1>;
 	};
 
-
+	buzzer: buzzer {
+		compatible = "smart210,buzzer";
+		pinctrl-name = "default";
+		pinctrl-0 = <&buzzer_pinctrl>;
+		status = "okay";
+		gpio-pin = <&gpd0 0 1>;
+	};
 
 };
 
@@ -276,6 +282,14 @@
 &pinctrl0 {
 	led_pinctrl: led_pinctrl {
 		samsung,pins = "gpj2-0", "gpj2-1", "gpj2-2", "gpj2-3";
+		samsung,pin-function = <EXYNOS_PIN_FUNC_OUTPUT>;
+		samsung,pin-val = <1>;
+		samsung,pin-pud = <S3C64XX_PIN_PULL_UP>;
+		samsung,pin-drv = <EXYNOS4_PIN_DRV_LV1>;
+	};
+
+	buzzer_pinctrl: buzzer_pinctrl {
+		samsung,pins = "gpd0-0";
 		samsung,pin-function = <EXYNOS_PIN_FUNC_OUTPUT>;
 		samsung,pin-val = <1>;
 		samsung,pin-pud = <S3C64XX_PIN_PULL_UP>;
