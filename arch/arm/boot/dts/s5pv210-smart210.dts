@@ -83,6 +83,43 @@
 		gpio-pin = <&gpd0 0 1>;
 	};
 
+	keys: keys {
+		compatible = "smart210,keys";
+		pinctrl-name = "default";
+		pinctrl-0 = <&pinctrl_keys>;
+		status="okay";
+		button1 {
+			gpio-pin = <&gph2 0 1>;
+		};		
+		
+		button2 {
+			gpio-pin = <&gph2 1 1>;
+		};		
+		
+		button3 {
+			gpio-pin = <&gph2 2 1>;
+		};		
+		
+		button4 {
+			gpio-pin = <&gph2 3 1>;
+		};		
+		
+		button5 {
+			gpio-pin = <&gph3 0 1>;
+		};		
+		
+		button6 {
+			gpio-pin = <&gph3 1 1>;
+		};		
+		
+		button7 {
+			gpio-pin = <&gph3 2 1>;
+		};		
+		
+		button8 {
+			gpio-pin = <&gph3 3 1>;
+		};
+	};
 };
 
 //必须重新设置xxti的时钟频率，不然会导致计时器卡死无法启动系统！！！
@@ -292,6 +329,14 @@
 		samsung,pins = "gpd0-0";
 		samsung,pin-function = <EXYNOS_PIN_FUNC_OUTPUT>;
 		samsung,pin-val = <1>;
+		samsung,pin-pud = <S3C64XX_PIN_PULL_UP>;
+		samsung,pin-drv = <EXYNOS4_PIN_DRV_LV1>;
+	};
+
+	pinctrl_keys: keysgrp {
+		samsung,pins = "gph2-0", "gph2-1", "gph2-2", "gph2-3", 
+					   "gph3-0", "gph3-1", "gph3-2", "gph3-3";
+		samsung,pin-function = <EXYNOS_PIN_FUNC_INPUT>;
 		samsung,pin-pud = <S3C64XX_PIN_PULL_UP>;
 		samsung,pin-drv = <EXYNOS4_PIN_DRV_LV1>;
 	};
