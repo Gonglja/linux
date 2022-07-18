@@ -87,9 +87,12 @@
 		compatible = "smart210,keys";
 		pinctrl-name = "default";
 		pinctrl-0 = <&pinctrl_keys>;
+		interrupt-parent = <&gph2>;
+		interrupts=<0x32>;
 		status="okay";
 		button1 {
 			gpio-pin = <&gph2 0 1>;
+			
 		};		
 		
 		button2 {
