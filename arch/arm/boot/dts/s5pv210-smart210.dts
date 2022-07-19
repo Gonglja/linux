@@ -40,7 +40,7 @@
 		//网卡的中断引脚INT连接到SOC的XEINT7，XEINT7为gph0_7，所以第一个值为7
 		//第二值：4   1 = low-to-high edge triggered，2 = high-to-low edge triggered，4 = active high level-sensitive，8 = active low level-sensitive
 		interrupt-parent = <&gph0>;
-		interrupts = <7 4>;
+		interrupts = <7 IRQ_TYPE_LEVEL_HIGH>;
 		local-mac-address = [1a 2a 3a 4a 5a 6a];
 		davicom,no-eeprom;
 		clocks = <&clocks CLK_SROMC>;
@@ -87,36 +87,38 @@
 		compatible = "smart210,keys";
 		pinctrl-name = "default";
 		pinctrl-0 = <&pinctrl_keys>;
+		interrupt-parent = <&gph2>;
+		interrupts = <0 IRQ_TYPE_EDGE_BOTH>;
 		status="okay";
-		button1 {
+		key-1 {
 			gpio-pin = <&gph2 0 1>;
 		};		
 		
-		button2 {
+		key-2 {
 			gpio-pin = <&gph2 1 1>;
 		};		
 		
-		button3 {
+		key-3 {
 			gpio-pin = <&gph2 2 1>;
 		};		
 		
-		button4 {
+		key-4 {
 			gpio-pin = <&gph2 3 1>;
 		};		
 		
-		button5 {
+		key-5 {
 			gpio-pin = <&gph3 0 1>;
 		};		
 		
-		button6 {
+		key-6 {
 			gpio-pin = <&gph3 1 1>;
 		};		
 		
-		button7 {
+		key-7 {
 			gpio-pin = <&gph3 2 1>;
 		};		
 		
-		button8 {
+		key-8 {
 			gpio-pin = <&gph3 3 1>;
 		};
 	};
@@ -129,81 +131,6 @@
 
 &xusbxti {
 	clock-frequency = <24000000>;
-};
-
-&keypad {
-	linux,input-no-autorepeat;
-	wakeup-source;
-	samsung,keypad-num-rows = <8>;
-	samsung,keypad-num-columns = <8>;
-	pinctrl-names = "default";
-	pinctrl-0 = <&keypad_row0>, <&keypad_row1>, <&keypad_row2>,
-			<&keypad_row3>, <&keypad_row4>, <&keypad_row5>,
-			<&keypad_row6>, <&keypad_row7>,
-			<&keypad_col0>, <&keypad_col1>, <&keypad_col2>,
-			<&keypad_col3>, <&keypad_col4>, <&keypad_col5>,
-			<&keypad_col6>, <&keypad_col7>;
-	status = "okay";
-
-	key-1 {
-		keypad,row = <0>;
-		keypad,column = <3>;
-		linux,code = <KEY_1>;
-	};
-
-	key-2 {
-		keypad,row = <0>;
-		keypad,column = <4>;
-		linux,code = <KEY_2>;
-	};
-
-	key-3 {
-		keypad,row = <0>;
-		keypad,column = <5>;
-		linux,code = <KEY_3>;
-	};
-
-	key-4 {
-		keypad,row = <0>;
-		keypad,column = <6>;
-		linux,code = <KEY_4>;
-	};
-
-	key-5 {
-		keypad,row = <0
-		>;
-		keypad,column = <7>;
-		linux,code = <KEY_5>;
-	};
-
-	key-6 {
-		keypad,row = <1>;
-		keypad,column = <3>;
-		linux,code = <KEY_A>;
-	};
-	key-7 {
-		keypad,row = <1>;
-		keypad,column = <4>;
-		linux,code = <KEY_B>;
-	};
-
-	key-8 {
-		keypad,row = <1>;
-		keypad,column = <5>;
-		linux,code = <KEY_C>;
-	};
-
-	key-9 {
-		keypad,row = <1>;
-		keypad,column = <6>;
-		linux,code = <KEY_D>;
-	};
-
-	key-10 {
-		keypad,row = <1>;
-		keypad,column = <7>;
-		linux,code = <KEY_E>;
-	};
 };
 
 
