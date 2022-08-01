@@ -88,11 +88,7 @@
 		pinctrl-name = "default";
 		pinctrl-0 = <&pinctrl_keys>;
 		interrupt-parent = <&gph2>;
-<<<<<<< HEAD
-		interrupts=<0x32>;
-=======
 		interrupts = <0 IRQ_TYPE_EDGE_BOTH>;
->>>>>>> bdd1bcf1d8a3c6858dbb7e889bda6cb56e0ceaf4
 		status="okay";
 		key-1 {
 			gpio-pin = <&gph2 0 1>;
