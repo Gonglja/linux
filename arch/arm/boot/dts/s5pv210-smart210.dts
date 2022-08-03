@@ -194,6 +194,15 @@
 	status = "okay";
 };
 
+&ehci {
+	status = "okay";
+};
+
+&ohci { 
+	status = "okay";
+};
+
+
 
 &fimd {
 	pinctrl-0 = <&lcd_clk &lcd_data24>;
