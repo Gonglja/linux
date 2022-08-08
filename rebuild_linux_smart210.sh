@@ -18,7 +18,7 @@
 export ARCH=arm
 export CROSS_COMPILE=/opt/s5pv210/arm-buildroot-linux-gnueabi_sdk-buildroot/bin/arm-buildroot-linux-gnueabi-
 
-OUT_DIR=/home/u/workspace/os/output
+OUT_DIR=`pwd`/../output
 
 # 0.5  清除以前编译
 make  O=$OUT_DIR clean 
