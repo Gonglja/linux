@@ -28,7 +28,7 @@ mkdir -p $OUT_DIR
 
 
 # 1.0 配置s5pv210默认配置，指定输出位置
-make s5pv210_fin_defconfig O=$OUT_DIR
+make smart210_defconfig O=$OUT_DIR
 
 # 1.1 编译 uImage
 make LOADADDR=0x20004000 uImage O=$OUT_DIR -j$(nproc)
