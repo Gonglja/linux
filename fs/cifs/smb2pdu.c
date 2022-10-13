@@ -873,7 +873,7 @@ SMB2_negotiate(const unsigned int xid,
 	struct smb2_negotiate_rsp *rsp;
 	struct kvec iov[1];
 	struct kvec rsp_iov;
-	int rc = 0;
+	int rc;
 	int resp_buftype;
 	int blob_offset, blob_length;
 	char *security_blob;
@@ -965,16 +965,17 @@ SMB2_negotiate(const unsigned int xid,
 	} else if (rc != 0)
 		goto neg_exit;
 
+	rc = -EIO;
 	if (strcmp(server->vals->version_string,
 		   SMB3ANY_VERSION_STRING) == 0) {
 		if (rsp->DialectRevision == cpu_to_le16(SMB20_PROT_ID)) {
 			cifs_server_dbg(VFS,
 				"SMB2 dialect returned but not requested\n");
-			return -EIO;
+			goto neg_exit;
 		} else if (rsp->DialectRevision == cpu_to_le16(SMB21_PROT_ID)) {
 			cifs_server_dbg(VFS,
 				"SMB2.1 dialect returned but not requested\n");
-			return -EIO;
+			goto neg_exit;
 		} else if (rsp->DialectRevision == cpu_to_le16(SMB311_PROT_ID)) {
 			/* ops set to 3.0 by default for default so update */
 			server->ops = &smb311_operations;
@@ -985,7 +986,7 @@ SMB2_negotiate(const unsigned int xid,
 		if (rsp->DialectRevision == cpu_to_le16(SMB20_PROT_ID)) {
 			cifs_server_dbg(VFS,
 				"SMB2 dialect returned but not requested\n");
-			return -EIO;
+			goto neg_exit;
 		} else if (rsp->DialectRevision == cpu_to_le16(SMB21_PROT_ID)) {
 			/* ops set to 3.0 by default for default so update */
 			server->ops = &smb21_operations;
@@ -999,7 +1000,7 @@ SMB2_negotiate(const unsigned int xid,
 		/* if requested single dialect ensure returned dialect matched */
 		cifs_server_dbg(VFS, "Invalid 0x%x dialect returned: not requested\n",
 				le16_to_cpu(rsp->DialectRevision));
-		return -EIO;
+		goto neg_exit;
 	}
 
 	cifs_dbg(FYI, "mode 0x%x\n", rsp->SecurityMode);
@@ -1017,9 +1018,10 @@ SMB2_negotiate(const unsigned int xid,
 	else {
 		cifs_server_dbg(VFS, "Invalid dialect returned by server 0x%x\n",
 				le16_to_cpu(rsp->DialectRevision));
-		rc = -EIO;
 		goto neg_exit;
 	}
+
+	rc = 0;
 	server->dialect = le16_to_cpu(rsp->DialectRevision);
 
 	/*
@@ -1167,9 +1169,9 @@ int smb3_validate_negotiate(const unsigned int xid, struct cifs_tcon *tcon)
 		pneg_inbuf->Dialects[0] =
 			cpu_to_le16(server->vals->protocol_id);
 		pneg_inbuf->DialectCount = cpu_to_le16(1);
-		/* structure is big enough for 3 dialects, sending only 1 */
+		/* structure is big enough for 4 dialects, sending only 1 */
 		inbuflen = sizeof(*pneg_inbuf) -
-				sizeof(pneg_inbuf->Dialects[0]) * 2;
+				sizeof(pneg_inbuf->Dialects[0]) * 3;
 	}
 
 	rc = SMB2_ioctl(xid, tcon, NO_FILE_ID, NO_FILE_ID,
@@ -1343,6 +1345,13 @@ SMB2_sess_alloc_buffer(struct SMB2_sess_data *sess_data)
 static void
 SMB2_sess_free_buffer(struct SMB2_sess_data *sess_data)
 {
+	int i;
+
+	/* zero the session data before freeing, as it might contain sensitive info (keys, etc) */
+	for (i = 0; i < 2; i++)
+		if (sess_data->iov[i].iov_base)
+			memzero_explicit(sess_data->iov[i].iov_base, sess_data->iov[i].iov_len);
+
 	free_rsp_buf(sess_data->buf0_type, sess_data->iov[0].iov_base);
 	sess_data->buf0_type = CIFS_NO_BUFFER;
 }
@@ -1475,6 +1484,8 @@ SMB2_auth_kerberos(struct SMB2_sess_data *sess_data)
 out_put_spnego_key:
 	key_invalidate(spnego_key);
 	key_put(spnego_key);
+	if (rc)
+		kfree_sensitive(ses->auth_key.response);
 out:
 	sess_data->result = rc;
 	sess_data->func = NULL;
@@ -1571,7 +1582,7 @@ SMB2_sess_auth_rawntlmssp_negotiate(struct SMB2_sess_data *sess_data)
 	}
 
 out:
-	kfree(ntlmssp_blob);
+	memzero_explicit(ntlmssp_blob, blob_length);
 	SMB2_sess_free_buffer(sess_data);
 	if (!rc) {
 		sess_data->result = 0;
@@ -1579,7 +1590,7 @@ out:
 		return;
 	}
 out_err:
-	kfree(ses->ntlmssp);
+	kfree_sensitive(ses->ntlmssp);
 	ses->ntlmssp = NULL;
 	sess_data->result = rc;
 	sess_data->func = NULL;
@@ -1655,9 +1666,9 @@ SMB2_sess_auth_rawntlmssp_authenticate(struct SMB2_sess_data *sess_data)
 	}
 #endif
 out:
-	kfree(ntlmssp_blob);
+	memzero_explicit(ntlmssp_blob, blob_length);
 	SMB2_sess_free_buffer(sess_data);
-	kfree(ses->ntlmssp);
+	kfree_sensitive(ses->ntlmssp);
 	ses->ntlmssp = NULL;
 	sess_data->result = rc;
 	sess_data->func = NULL;
@@ -1735,7 +1746,7 @@ SMB2_sess_setup(const unsigned int xid, struct cifs_ses *ses,
 		cifs_server_dbg(VFS, "signing requested but authenticated as guest\n");
 	rc = sess_data->result;
 out:
-	kfree(sess_data);
+	kfree_sensitive(sess_data);
 	return rc;
 }
 
@@ -1928,7 +1939,7 @@ SMB2_tcon(const unsigned int xid, struct cifs_ses *ses, const char *tree,
 	tcon->capabilities = rsp->Capabilities; /* we keep caps little endian */
 	tcon->maximal_access = le32_to_cpu(rsp->MaximalAccess);
 	tcon->tid = le32_to_cpu(rsp->hdr.Id.SyncId.TreeId);
-	strscpy(tcon->treeName, tree, sizeof(tcon->treeName));
+	strscpy(tcon->tree_name, tree, sizeof(tcon->tree_name));
 
 	if ((rsp->Capabilities & SMB2_SHARE_CAP_DFS) &&
 	    ((tcon->share_flags & SHI1005_FLAGS_DFS) == 0))
@@ -1971,6 +1982,7 @@ SMB2_tdis(const unsigned int xid, struct cifs_tcon *tcon)
 	if (!ses || !(ses->server))
 		return -EIO;
 
+	trace_smb3_tdis_enter(xid, tcon->tid, ses->Suid, tcon->tree_name);
 	spin_lock(&ses->chan_lock);
 	if ((tcon->need_reconnect) ||
 	    (CIFS_ALL_CHANS_NEED_RECONNECT(tcon->ses))) {
@@ -2002,8 +2014,11 @@ SMB2_tdis(const unsigned int xid, struct cifs_tcon *tcon)
 	rc = cifs_send_recv(xid, ses, ses->server,
 			    &rqst, &resp_buf_type, flags, &rsp_iov);
 	cifs_small_buf_release(req);
-	if (rc)
+	if (rc) {
 		cifs_stats_fail_inc(tcon, SMB2_TREE_DISCONNECT_HE);
+		trace_smb3_tdis_err(xid, tcon->tid, ses->Suid, rc);
+	}
+	trace_smb3_tdis_done(xid, tcon->tid, ses->Suid);
 
 	return rc;
 }
@@ -2572,19 +2587,15 @@ alloc_path_with_tree_prefix(__le16 **out_path, int *out_size, int *out_len,
 
 	path_len = UniStrnlen((wchar_t *)path, PATH_MAX);
 
-	/*
-	 * make room for one path separator between the treename and
-	 * path
-	 */
-	*out_len = treename_len + 1 + path_len;
+	/* make room for one path separator only if @path isn't empty */
+	*out_len = treename_len + (path[0] ? 1 : 0) + path_len;
 
 	/*
-	 * final path needs to be null-terminated UTF16 with a
-	 * size aligned to 8
+	 * final path needs to be 8-byte aligned as specified in
+	 * MS-SMB2 2.2.13 SMB2 CREATE Request.
 	 */
-
-	*out_size = roundup((*out_len+1)*2, 8);
-	*out_path = kzalloc(*out_size, GFP_KERNEL);
+	*out_size = roundup(*out_len * sizeof(__le16), 8);
+	*out_path = kzalloc(*out_size + sizeof(__le16) /* null */, GFP_KERNEL);
 	if (!*out_path)
 		return -ENOMEM;
 
@@ -2676,7 +2687,7 @@ int smb311_posix_mkdir(const unsigned int xid, struct inode *inode,
 		req->hdr.Flags |= SMB2_FLAGS_DFS_OPERATIONS;
 		rc = alloc_path_with_tree_prefix(&copy_path, &copy_size,
 						 &name_len,
-						 tcon->treeName, utf16_path);
+						 tcon->tree_name, utf16_path);
 		if (rc)
 			goto err_free_req;
 
@@ -2818,7 +2829,7 @@ SMB2_open_init(struct cifs_tcon *tcon, struct TCP_Server_Info *server,
 		req->hdr.Flags |= SMB2_FLAGS_DFS_OPERATIONS;
 		rc = alloc_path_with_tree_prefix(&copy_path, &copy_size,
 						 &name_len,
-						 tcon->treeName, path);
+						 tcon->tree_name, path);
 		if (rc)
 			return rc;
 		req->NameLength = cpu_to_le16(name_len * 2);
@@ -3013,7 +3024,7 @@ SMB2_open(const unsigned int xid, struct cifs_open_parms *oparms, __le16 *path,
 				    oparms->create_options, oparms->desired_access, rc);
 		if (rc == -EREMCHG) {
 			pr_warn_once("server share %s deleted\n",
-				     tcon->treeName);
+				     tcon->tree_name);
 			tcon->need_reconnect = true;
 		}
 		goto creat_exit;
@@ -4431,7 +4442,7 @@ smb2_writev_callback(struct mid_q_entry *mid)
 				     wdata->bytes, wdata->result);
 		if (wdata->result == -ENOSPC)
 			pr_warn_once("Out of space writing to %s\n",
-				     tcon->treeName);
+				     tcon->tree_name);
 	} else
 		trace_smb3_write_done(0 /* no xid */,
 				      wdata->cfile->fid.persistent_fid,
