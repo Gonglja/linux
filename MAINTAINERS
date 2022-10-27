@@ -752,7 +752,7 @@ ALIBABA PMU DRIVER
 M:	Shuai Xue <xueshuai@linux.alibaba.com>
 S:	Supported
 F:	Documentation/admin-guide/perf/alibaba_pmu.rst
-F:	drivers/perf/alibaba_uncore_dwr_pmu.c
+F:	drivers/perf/alibaba_uncore_drw_pmu.c
 
 ALIENWARE WMI DRIVER
 L:	Dell.Client.Kernel@dell.com
@@ -4459,13 +4459,15 @@ M:	Josef Bacik <josef@toxicpanda.com>
 M:	David Sterba <dsterba@suse.com>
 L:	linux-btrfs@vger.kernel.org
 S:	Maintained
-W:	http://btrfs.wiki.kernel.org/
-Q:	http://patchwork.kernel.org/project/linux-btrfs/list/
+W:	https://btrfs.readthedocs.io
+W:	https://btrfs.wiki.kernel.org/
+Q:	https://patchwork.kernel.org/project/linux-btrfs/list/
 C:	irc://irc.libera.chat/btrfs
 T:	git git://git.kernel.org/pub/scm/linux/kernel/git/kdave/linux.git
 F:	Documentation/filesystems/btrfs.rst
 F:	fs/btrfs/
 F:	include/linux/btrfs*
+F:	include/trace/events/btrfs.h
 F:	include/uapi/linux/btrfs*
 
 BTTV VIDEO4LINUX DRIVER
@@ -5266,6 +5268,7 @@ F:	tools/testing/selftests/cgroup/
 
 CONTROL GROUP - BLOCK IO CONTROLLER (BLKIO)
 M:	Tejun Heo <tj@kernel.org>
+M:	Josef Bacik <josef@toxicpanda.com>
 M:	Jens Axboe <axboe@kernel.dk>
 L:	cgroups@vger.kernel.org
 L:	linux-block@vger.kernel.org
@@ -5273,6 +5276,7 @@ T:	git git://git.kernel.dk/linux-block
 F:	Documentation/admin-guide/cgroup-v1/blkio-controller.rst
 F:	block/bfq-cgroup.c
 F:	block/blk-cgroup.c
+F:	block/blk-iocost.c
 F:	block/blk-iolatency.c
 F:	block/blk-throttle.c
 F:	include/linux/blk-cgroup.h
@@ -6280,7 +6284,7 @@ M:	Sakari Ailus <sakari.ailus@linux.intel.com>
 L:	linux-media@vger.kernel.org
 S:	Maintained
 T:	git git://linuxtv.org/media_tree.git
-F:	Documentation/devicetree/bindings/media/i2c/dongwoon,dw9714.txt
+F:	Documentation/devicetree/bindings/media/i2c/dongwoon,dw9714.yaml
 F:	drivers/media/i2c/dw9714.c
 
 DONGWOON DW9768 LENS VOICE COIL DRIVER
@@ -14709,6 +14713,12 @@ F:	drivers/nvme/target/auth.c
 F:	drivers/nvme/target/fabrics-cmd-auth.c
 F:	include/linux/nvme-auth.h
 
+NVM EXPRESS HARDWARE MONITORING SUPPORT
+M:	Guenter Roeck <linux@roeck-us.net>
+L:	linux-nvme@lists.infradead.org
+S:	Supported
+F:	drivers/nvme/host/hwmon.c
+
 NVM EXPRESS FC TRANSPORT DRIVERS
 M:	James Smart <james.smart@broadcom.com>
 L:	linux-nvme@lists.infradead.org
@@ -15359,17 +15369,6 @@ L:	linux-rdma@vger.kernel.org
 S:	Supported
 F:	drivers/infiniband/ulp/opa_vnic
 
-OPEN FIRMWARE AND DEVICE TREE OVERLAYS
-M:	Pantelis Antoniou <pantelis.antoniou@konsulko.com>
-M:	Frank Rowand <frowand.list@gmail.com>
-L:	devicetree@vger.kernel.org
-S:	Maintained
-F:	Documentation/devicetree/dynamic-resolution-notes.rst
-F:	Documentation/devicetree/overlay-notes.rst
-F:	drivers/of/overlay.c
-F:	drivers/of/resolver.c
-K:	of_overlay_notifier_
-
 OPEN FIRMWARE AND FLATTENED DEVICE TREE
 M:	Rob Herring <robh+dt@kernel.org>
 M:	Frank Rowand <frowand.list@gmail.com>
@@ -15382,6 +15381,9 @@ F:	Documentation/ABI/testing/sysfs-firmware-ofw
 F:	drivers/of/
 F:	include/linux/of*.h
 F:	scripts/dtc/
+K:	of_overlay_notifier_
+K:	of_overlay_fdt_apply
+K:	of_overlay_remove
 
 OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS
 M:	Rob Herring <robh+dt@kernel.org>
@@ -15419,7 +15421,7 @@ M:	Stafford Horne <shorne@gmail.com>
 L:	openrisc@lists.librecores.org
 S:	Maintained
 W:	http://openrisc.io
-T:	git git://github.com/openrisc/linux.git
+T:	git https://github.com/openrisc/linux.git
 F:	Documentation/devicetree/bindings/openrisc/
 F:	Documentation/openrisc/
 F:	arch/openrisc/
@@ -15847,7 +15849,7 @@ F:	Documentation/devicetree/bindings/pci/snps,dw-pcie-ep.yaml
 F:	drivers/pci/controller/dwc/*designware*
 
 PCI DRIVER FOR TI DRA7XX/J721E
-M:	Kishon Vijay Abraham I <kishon@ti.com>
+M:	Vignesh Raghavendra <vigneshr@ti.com>
 L:	linux-omap@vger.kernel.org
 L:	linux-pci@vger.kernel.org
 L:	linux-arm-kernel@lists.infradead.org (moderated for non-subscribers)
@@ -15864,10 +15866,10 @@ F:	Documentation/devicetree/bindings/pci/v3-v360epc-pci.txt
 F:	drivers/pci/controller/pci-v3-semi.c
 
 PCI ENDPOINT SUBSYSTEM
-M:	Kishon Vijay Abraham I <kishon@ti.com>
 M:	Lorenzo Pieralisi <lpieralisi@kernel.org>
 R:	Krzysztof Wilczyński <kw@linux.com>
 R:	Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
+R:	Kishon Vijay Abraham I <kishon@kernel.org>
 L:	linux-pci@vger.kernel.org
 S:	Supported
 Q:	https://patchwork.kernel.org/project/linux-pci/list/
@@ -16673,6 +16675,7 @@ F:	Documentation/driver-api/ptp.rst
 F:	drivers/net/phy/dp83640*
 F:	drivers/ptp/*
 F:	include/linux/ptp_cl*
+K:	(?:\b|_)ptp(?:\b|_)
 
 PTP VIRTUAL CLOCK SUPPORT
 M:	Yangbo Lu <yangbo.lu@nxp.com>
@@ -17710,6 +17713,7 @@ M:	Palmer Dabbelt <palmer@dabbelt.com>
 M:	Albert Ou <aou@eecs.berkeley.edu>
 L:	linux-riscv@lists.infradead.org
 S:	Supported
+Q:	https://patchwork.kernel.org/project/linux-riscv/list/
 P:	Documentation/riscv/patch-acceptance.rst
 T:	git git://git.kernel.org/pub/scm/linux/kernel/git/riscv/linux.git
 F:	arch/riscv/
@@ -17721,12 +17725,13 @@ M:	Conor Dooley <conor.dooley@microchip.com>
 M:	Daire McNamara <daire.mcnamara@microchip.com>
 L:	linux-riscv@lists.infradead.org
 S:	Supported
-F:	Documentation/devicetree/bindings/clock/microchip,mpfs.yaml
+F:	Documentation/devicetree/bindings/clock/microchip,mpfs*.yaml
 F:	Documentation/devicetree/bindings/gpio/microchip,mpfs-gpio.yaml
 F:	Documentation/devicetree/bindings/i2c/microchip,corei2c.yaml
 F:	Documentation/devicetree/bindings/mailbox/microchip,mpfs-mailbox.yaml
 F:	Documentation/devicetree/bindings/net/can/microchip,mpfs-can.yaml
 F:	Documentation/devicetree/bindings/pwm/microchip,corepwm.yaml
+F:	Documentation/devicetree/bindings/riscv/microchip.yaml
 F:	Documentation/devicetree/bindings/soc/microchip/microchip,mpfs-sys-controller.yaml
 F:	Documentation/devicetree/bindings/spi/microchip,mpfs-spi.yaml
 F:	Documentation/devicetree/bindings/usb/microchip,mpfs-musb.yaml
@@ -18137,7 +18142,6 @@ L:	linux-media@vger.kernel.org
 S:	Maintained
 T:	git git://linuxtv.org/media_tree.git
 F:	drivers/staging/media/deprecated/saa7146/
-F:	include/media/drv-intf/saa7146*
 
 SAFESETID SECURITY MODULE
 M:	Micah Morton <mortonm@chromium.org>
@@ -18217,7 +18221,6 @@ F:	include/media/drv-intf/s3c_camif.h
 
 SAMSUNG S3FWRN5 NFC DRIVER
 M:	Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-M:	Krzysztof Opasiak <k.opasiak@samsung.com>
 L:	linux-nfc@lists.01.org (subscribers-only)
 S:	Maintained
 F:	Documentation/devicetree/bindings/net/nfc/samsung,s3fwrn5.yaml
@@ -18523,8 +18526,7 @@ S:	Maintained
 F:	drivers/mmc/host/sdhci-esdhc-imx.c
 
 SECURE ENCRYPTING DEVICE (SED) OPAL DRIVER
-M:	Jonathan Derrick <jonathan.derrick@intel.com>
-M:	Revanth Rajashekar <revanth.rajashekar@intel.com>
+M:	Jonathan Derrick <jonathan.derrick@linux.dev>
 L:	linux-block@vger.kernel.org
 S:	Supported
 F:	block/opal_proto.h
@@ -18670,6 +18672,7 @@ F:	drivers/misc/sgi-xp/
 SHARED MEMORY COMMUNICATIONS (SMC) SOCKETS
 M:	Karsten Graul <kgraul@linux.ibm.com>
 M:	Wenjia Zhang <wenjia@linux.ibm.com>
+M:	Jan Karcher <jaka@linux.ibm.com>
 L:	linux-s390@vger.kernel.org
 S:	Supported
 W:	http://www.ibm.com/developerworks/linux/linux390/
@@ -21299,7 +21302,7 @@ L:	linux-usb@vger.kernel.org
 L:	netdev@vger.kernel.org
 S:	Maintained
 W:	https://github.com/petkan/pegasus
-T:	git git://github.com/petkan/pegasus.git
+T:	git https://github.com/petkan/pegasus.git
 F:	drivers/net/usb/pegasus.*
 
 USB PHY LAYER
@@ -21336,7 +21339,7 @@ L:	linux-usb@vger.kernel.org
 L:	netdev@vger.kernel.org
 S:	Maintained
 W:	https://github.com/petkan/rtl8150
-T:	git git://github.com/petkan/rtl8150.git
+T:	git https://github.com/petkan/rtl8150.git
 F:	drivers/net/usb/rtl8150.c
 
 USB SERIAL SUBSYSTEM
@@ -21739,6 +21742,10 @@ F:	include/linux/virtio*.h
 F:	include/uapi/linux/virtio_*.h
 F:	tools/virtio/
 
+IFCVF VIRTIO DATA PATH ACCELERATOR
+R:	Zhu Lingshan <lingshan.zhu@intel.com>
+F:	drivers/vdpa/ifcvf/
+
 VIRTIO BALLOON
 M:	"Michael S. Tsirkin" <mst@redhat.com>
 M:	David Hildenbrand <david@redhat.com>
@@ -22123,6 +22130,7 @@ F:	Documentation/watchdog/
 F:	drivers/watchdog/
 F:	include/linux/watchdog.h
 F:	include/uapi/linux/watchdog.h
+F:	include/trace/events/watchdog.h
 
 WHISKEYCOVE PMIC GPIO DRIVER
 M:	Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
@@ -22763,7 +22771,7 @@ S:	Maintained
 W:	http://mjpeg.sourceforge.net/driver-zoran/
 Q:	https://patchwork.linuxtv.org/project/linux-media/list/
 F:	Documentation/driver-api/media/drivers/zoran.rst
-F:	drivers/staging/media/zoran/
+F:	drivers/media/pci/zoran/
 
 ZRAM COMPRESSED RAM BLOCK DEVICE DRVIER
 M:	Minchan Kim <minchan@kernel.org>
