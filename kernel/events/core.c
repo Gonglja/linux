@@ -9030,7 +9030,7 @@ static void perf_event_bpf_emit_ksymbols(struct bpf_prog *prog,
 				PERF_RECORD_KSYMBOL_TYPE_BPF,
 				(u64)(unsigned long)subprog->bpf_func,
 				subprog->jited_len, unregister,
-				prog->aux->ksym.name);
+				subprog->aux->ksym.name);
 		}
 	}
 }
@@ -9273,6 +9273,19 @@ int perf_event_account_interrupt(struct perf_event *event)
 	return __perf_event_account_interrupt(event, 1);
 }
 
+static inline bool sample_is_allowed(struct perf_event *event, struct pt_regs *regs)
+{
+	/*
+	 * Due to interrupt latency (AKA "skid"), we may enter the
+	 * kernel before taking an overflow, even if the PMU is only
+	 * counting user events.
+	 */
+	if (event->attr.exclude_kernel && !user_mode(regs))
+		return false;
+
+	return true;
+}
+
 /*
  * Generic event overflow handling, sampling.
  */
@@ -9306,6 +9319,13 @@ static int __perf_event_overflow(struct perf_event *event,
 	}
 
 	if (event->attr.sigtrap) {
+		/*
+		 * The desired behaviour of sigtrap vs invalid samples is a bit
+		 * tricky; on the one hand, one should not loose the SIGTRAP if
+		 * it is the first event, on the other hand, we should also not
+		 * trigger the WARN or override the data address.
+		 */
+		bool valid_sample = sample_is_allowed(event, regs);
 		unsigned int pending_id = 1;
 
 		if (regs)
@@ -9313,7 +9333,7 @@ static int __perf_event_overflow(struct perf_event *event,
 		if (!event->pending_sigtrap) {
 			event->pending_sigtrap = pending_id;
 			local_inc(&event->ctx->nr_pending);
-		} else if (event->attr.exclude_kernel) {
+		} else if (event->attr.exclude_kernel && valid_sample) {
 			/*
 			 * Should not be able to return to user space without
 			 * consuming pending_sigtrap; with exceptions:
@@ -9328,7 +9348,10 @@ static int __perf_event_overflow(struct perf_event *event,
 			 */
 			WARN_ON_ONCE(event->pending_sigtrap != pending_id);
 		}
-		event->pending_addr = data->addr;
+
+		event->pending_addr = 0;
+		if (valid_sample && (data->sample_flags & PERF_SAMPLE_ADDR))
+			event->pending_addr = data->addr;
 		irq_work_queue(&event->pending_irq);
 	}
 
