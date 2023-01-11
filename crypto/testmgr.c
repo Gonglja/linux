@@ -766,7 +766,7 @@ static int build_cipher_test_sglists(struct cipher_test_sglists *tsgls,
 	struct iov_iter input;
 	int err;
 
-	iov_iter_kvec(&input, WRITE, inputs, nr_inputs, src_total_len);
+	iov_iter_kvec(&input, ITER_SOURCE, inputs, nr_inputs, src_total_len);
 	err = build_test_sglist(&tsgls->src, cfg->src_divs, alignmask,
 				cfg->inplace_mode != OUT_OF_PLACE ?
 					max(dst_total_len, src_total_len) :
@@ -1180,7 +1180,7 @@ static int build_hash_sglist(struct test_sglist *tsgl,
 
 	kv.iov_base = (void *)vec->plaintext;
 	kv.iov_len = vec->psize;
-	iov_iter_kvec(&input, WRITE, &kv, 1, vec->psize);
+	iov_iter_kvec(&input, ITER_SOURCE, &kv, 1, vec->psize);
 	return build_test_sglist(tsgl, cfg->src_divs, alignmask, vec->psize,
 				 &input, divs);
 }
@@ -4713,6 +4713,12 @@ static const struct alg_test_desc alg_test_descs[] = {
 		.test = alg_test_null,
 		.fips_allowed = 1,
 	}, {
+		.alg = "cts(cbc(sm4))",
+		.test = alg_test_skcipher,
+		.suite = {
+			.cipher = __VECS(sm4_cts_tv_template)
+		}
+	}, {
 		.alg = "curve25519",
 		.test = alg_test_kpp,
 		.suite = {
@@ -5587,6 +5593,12 @@ static const struct alg_test_desc alg_test_descs[] = {
 			.hash = __VECS(aes_xcbc128_tv_template)
 		}
 	}, {
+		.alg = "xcbc(sm4)",
+		.test = alg_test_hash,
+		.suite = {
+			.hash = __VECS(sm4_xcbc128_tv_template)
+		}
+	}, {
 		.alg = "xchacha12",
 		.test = alg_test_skcipher,
 		.suite = {
@@ -5639,6 +5651,13 @@ static const struct alg_test_desc alg_test_descs[] = {
 		.test = alg_test_skcipher,
 		.suite = {
 			.cipher = __VECS(serpent_xts_tv_template)
+		}
+	}, {
+		.alg = "xts(sm4)",
+		.generic_driver = "xts(ecb(sm4-generic))",
+		.test = alg_test_skcipher,
+		.suite = {
+			.cipher = __VECS(sm4_xts_tv_template)
 		}
 	}, {
 		.alg = "xts(twofish)",
