@@ -26,8 +26,7 @@ _end enter_prom $MEM_FUNCS reloc_offset __secondary_hold
 __secondary_hold_acknowledge __secondary_hold_spinloop __start
 logo_linux_clut224 btext_prepare_BAT
 reloc_got2 kernstart_addr memstart_addr linux_banner _stext
-__prom_init_toc_start __prom_init_toc_end btext_setup_display TOC.
-relocate"
+btext_setup_display TOC. relocate"
 
 NM="$1"
 OBJ="$2"
@@ -52,11 +51,10 @@ do
 	# a leading . on the name, so strip it off here.
 	UNDEF="${UNDEF#.}"
 
-	if [ $KBUILD_VERBOSE ]; then
-		if [ $KBUILD_VERBOSE -ne 0 ]; then
-			echo "Checking prom_init.o symbol '$UNDEF'"
-		fi
-	fi
+	case "$KBUILD_VERBOSE" in
+	*1*)
+		echo "Checking prom_init.o symbol '$UNDEF'" ;;
+	esac
 
 	OK=0
 	for WHITE in $WHITELIST

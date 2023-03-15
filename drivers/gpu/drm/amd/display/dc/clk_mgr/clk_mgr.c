@@ -29,6 +29,7 @@
 #include "dc_types.h"
 #include "dccg.h"
 #include "clk_mgr_internal.h"
+#include "link.h"
 
 #include "dce100/dce_clk_mgr.h"
 #include "dce110/dce110_clk_mgr.h"
@@ -337,7 +338,7 @@ struct clk_mgr *dc_clk_mgr_create(struct dc_context *ctx, struct pp_smu_funcs *p
 	    break;
 	}
 
-	case AMDGPU_FAMILY_GC_11_0_2: {
+	case AMDGPU_FAMILY_GC_11_0_1: {
 		struct clk_mgr_dcn314 *clk_mgr = kzalloc(sizeof(*clk_mgr), GFP_KERNEL);
 
 		if (clk_mgr == NULL) {
@@ -397,7 +398,7 @@ void dc_destroy_clk_mgr(struct clk_mgr *clk_mgr_base)
 		dcn32_clk_mgr_destroy(clk_mgr);
 		break;
 
-	case AMDGPU_FAMILY_GC_11_0_2:
+	case AMDGPU_FAMILY_GC_11_0_1:
 		dcn314_clk_mgr_destroy(clk_mgr);
 		break;
 

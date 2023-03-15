@@ -8,6 +8,7 @@
 #include <linux/fs.h>
 #include <linux/string.h>
 #include <linux/ctype.h>
+#include <linux/kstrtox.h>
 #include <linux/module.h>
 #include <linux/proc_fs.h>
 #include <linux/uaccess.h>
@@ -42,7 +43,7 @@ void cifs_dump_detail(void *buf, struct TCP_Server_Info *server)
 		 smb->Command, smb->Status.CifsError,
 		 smb->Flags, smb->Flags2, smb->Mid, smb->Pid);
 	cifs_dbg(VFS, "smb buf %p len %u\n", smb,
-		 server->ops->calc_smb_size(smb, server));
+		 server->ops->calc_smb_size(smb));
 #endif /* CONFIG_CIFS_DEBUG2 */
 }
 
@@ -87,7 +88,7 @@ static void cifs_debug_tcon(struct seq_file *m, struct cifs_tcon *tcon)
 {
 	__u32 dev_type = le32_to_cpu(tcon->fsDevInfo.DeviceType);
 
-	seq_printf(m, "%s Mounts: %d ", tcon->treeName, tcon->tc_count);
+	seq_printf(m, "%s Mounts: %d ", tcon->tree_name, tcon->tc_count);
 	if (tcon->nativeFileSystem)
 		seq_printf(m, "Type: %s ", tcon->nativeFileSystem);
 	seq_printf(m, "DevInfo: 0x%x Attributes: 0x%x\n\tPathComponentMax: %d Status: %d",
@@ -372,6 +373,14 @@ skip_rdma:
 		seq_printf(m, "\nIn Send: %d In MaxReq Wait: %d",
 				atomic_read(&server->in_send),
 				atomic_read(&server->num_waiters));
+		if (IS_ENABLED(CONFIG_CIFS_DFS_UPCALL)) {
+			if (server->origin_fullpath)
+				seq_printf(m, "\nDFS origin full path: %s",
+					   server->origin_fullpath);
+			if (server->leaf_fullpath)
+				seq_printf(m, "\nDFS leaf full path:   %s",
+					   server->leaf_fullpath);
+		}
 
 		seq_printf(m, "\n\n\tSessions: ");
 		i = 0;
@@ -447,8 +456,10 @@ skip_rdma:
 
 			spin_lock(&ses->iface_lock);
 			if (ses->iface_count)
-				seq_printf(m, "\n\n\tServer interfaces: %zu",
-					   ses->iface_count);
+				seq_printf(m, "\n\n\tServer interfaces: %zu"
+					   "\tLast updated: %lu seconds ago",
+					   ses->iface_count,
+					   (jiffies - ses->iface_last_update) / HZ);
 			j = 0;
 			list_for_each_entry(iface, &ses->iface_list,
 						 iface_head) {
@@ -601,7 +612,7 @@ static int cifs_stats_proc_show(struct seq_file *m, void *v)
 		list_for_each_entry(ses, &server->smb_ses_list, smb_ses_list) {
 			list_for_each_entry(tcon, &ses->tcon_list, tcon_list) {
 				i++;
-				seq_printf(m, "\n%d) %s", i, tcon->treeName);
+				seq_printf(m, "\n%d) %s", i, tcon->tree_name);
 				if (tcon->need_reconnect)
 					seq_puts(m, "\tDISCONNECTED ");
 				seq_printf(m, "\nSMBs: %d",
@@ -779,7 +790,7 @@ static ssize_t cifsFYI_proc_write(struct file *file, const char __user *buffer,
 	rc = get_user(c[0], buffer);
 	if (rc)
 		return rc;
-	if (strtobool(c, &bv) == 0)
+	if (kstrtobool(c, &bv) == 0)
 		cifsFYI = bv;
 	else if ((c[0] > '1') && (c[0] <= '9'))
 		cifsFYI = (int) (c[0] - '0'); /* see cifs_debug.h for meanings */
@@ -939,7 +950,7 @@ static ssize_t cifs_security_flags_proc_write(struct file *file,
 
 	if (count < 3) {
 		/* single char or single char followed by null */
-		if (strtobool(flags_string, &bv) == 0) {
+		if (kstrtobool(flags_string, &bv) == 0) {
 			global_secflags = bv ? CIFSSEC_MAX : CIFSSEC_DEF;
 			return count;
 		} else if (!isdigit(flags_string[0])) {
