@@ -15,10 +15,13 @@
 # sudo apt-get purge -y --auto-remove libfdt-dev
 
 # 0.4 配置编译链环境
+# 通过buildroot 先构建编译链，生成的编译链路径如下，在路径后面加上 /usr/bin
+# 
+export PATH=/home/data/os/buildroot/s5pv210_smart210/host/usr/bin:$PATH
+export CROSS_COMPILE=arm-linux-
 export ARCH=arm
-export CROSS_COMPILE=/opt/s5pv210/arm-buildroot-linux-gnueabi_sdk-buildroot/bin/arm-buildroot-linux-gnueabi-
 
-OUT_DIR=`pwd`/../output
+OUT_DIR=smart210
 
 # 0.5  清除以前编译
 make  O=$OUT_DIR clean 
@@ -43,5 +46,5 @@ make INSTALL_DTBS_PATH=$OUT_DIR/res O=$OUT_DIR dtbs_install
 
 
 # echo "copy to ../rootfs/"
-# sudo cp -vrf $(OUT_DIR)/arch/arm/boot/uImage rootfs/
-# sudo cp -vrf $(OUT_DIR)/arch/arm/boot/dts/s5pv210-smart210.dtb rootfs/
+sudo cp -vrf smart210/arch/arm/boot/uImage ../smart210/rootfs
+sudo cp -vrf smart210/arch/arm/boot/dts/s5pv210-smart210.dtb ../smart210/rootfs
