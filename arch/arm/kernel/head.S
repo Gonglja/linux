@@ -102,10 +102,11 @@ ENTRY(stext)
 	bl	__hyp_stub_install
 #endif
 	@ ensure svc mode and all interrupts masked
+	@ 确保运行在 svc 模式下并且关闭所有中断 
 	safe_svcmode_maskall r9
 
-	mrc	p15, 0, r9, c0, c0		@ get processor id
-	bl	__lookup_processor_type		@ r5=procinfo r9=cpuid
+	mrc	p15, 0, r9, c0, c0		@ get processor id 获取处理器id
+	bl	__lookup_processor_type		@ r5=procinfo r9=cpuid 获取procinfo及cpuid
 	movs	r10, r5				@ invalid processor (r5=0)?
  THUMB( it	eq )		@ force fixup-able long branch encoding
 	beq	__error_p			@ yes, error 'p'
@@ -117,7 +118,11 @@ ENTRY(stext)
  THUMB( it	lo )				@ force fixup-able long branch encoding
 	blo	__error_lpae			@ only classic page table format
 #endif
-
+/* 
+ * CONFIG_XIP_KERNEL 是一个内核选项，
+ * 允许将内核映像嵌入到一个只读的文件系统中，从而减小启动时间和内存占用 
+ * 这意味着内核映像不再需要从磁盘或闪存设备中进行加载，而是可以直接从虚拟内存中运行，从而提高系统的响应性能。
+ */
 #ifndef CONFIG_XIP_KERNEL
 	adr_l	r8, _text			@ __pa(_text)
 	sub	r8, r8, #TEXT_OFFSET		@ PHYS_OFFSET
@@ -129,14 +134,14 @@ ENTRY(stext)
 	 * r1 = machine no, r2 = atags or dtb,
 	 * r8 = phys_offset, r9 = cpuid, r10 = procinfo
 	 */
-	bl	__vet_atags
+	bl	__vet_atags  @ 校验 atags 的有效性
 #ifdef CONFIG_SMP_ON_UP
-	bl	__fixup_smp
+	bl	__fixup_smp  @ 修复因处理器数量增加导致的一些问题。
 #endif
 #ifdef CONFIG_ARM_PATCH_PHYS_VIRT
 	bl	__fixup_pv_table
 #endif
-	bl	__create_page_tables
+	bl	__create_page_tables	@ 创建页表
 
 	/*
 	 * The following calls CPU specific code in a position independent
@@ -157,6 +162,7 @@ ENTRY(stext)
 	 * r0 will hold the CPU control register value, r1, r2, r4, and
 	 * r9 will be preserved.  r5 will also be preserved if LPAE.
 	 */
+	 @ 在使能 mmu 之后跳转至 __mmap_switched 
 	ldr	r13, =__mmap_switched		@ address to jump to after
 						@ mmu has been enabled
 	badr	lr, 1f				@ return (PIC) address

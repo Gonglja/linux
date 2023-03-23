@@ -105,6 +105,10 @@ __mmap_switched:
 	mov	r1, #0
 	bl	__memset			@ clear .bss
 
+	/* 
+	 * 获取Linux操作系统中的swapper任务所对应的"task_struct"结构体指针
+	 * 并将其作为当前任务的指针放到 r1 中
+	 */
 	adr_l	r0, init_task			@ get swapper task_struct
 	set_current r0, r1
 
@@ -115,7 +119,7 @@ __mmap_switched:
 	cmp	r3, #0
 	strne	r10, [r3]			@ Save control register values
 #ifdef CONFIG_KASAN
-	bl	kasan_early_init
+	bl	kasan_early_init		@ 内存错误检测工具
 #endif
 	mov	lr, #0
 	b	start_kernel
